@@ -5,11 +5,14 @@ const json = require('koa-json');
 const onerror = require('koa-onerror');
 const bodyparser = require('koa-bodyparser');
 const logger = require('koa-logger');
-const index = require('./routes/index');
 const users = require('./routes/users');
+const router = require('koa-router')();
+const log4js = require('./utils/log4j');
 
 // error handler
 onerror(app);
+
+require('./config/db');
 
 // middlewares
 app.use(
@@ -29,15 +32,17 @@ app.use(
 
 // logger
 app.use(async (ctx, next) => {
-  const start = new Date();
+  log4js.info(`get params:${JSON.stringify(ctx.request.query)}`);
+  log4js.info(`post params:${JSON.stringify(ctx.request.body)}`);
   await next();
-  const ms = new Date() - start;
-  console.log(`${ctx.method} ${ctx.url} - ${ms}ms`);
 });
 
+// 一级路由
+router.prefix('/api');
+// 二级路由
+router.use(users.routes(), users.allowedMethods());
 // routes
-app.use(index.routes(), index.allowedMethods());
-app.use(users.routes(), users.allowedMethods());
+app.use(router.routes(), router.allowedMethods());
 
 // error-handling
 app.on('error', (err, ctx) => {
