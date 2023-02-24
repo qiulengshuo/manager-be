@@ -8,6 +8,8 @@ const logger = require('koa-logger');
 const users = require('./routes/users');
 const router = require('koa-router')();
 const log4js = require('./utils/log4j');
+const utils = require('./utils/utils');
+const koajwt = require('koa-jwt');
 
 // error handler
 onerror(app);
@@ -34,19 +36,34 @@ app.use(
 app.use(async (ctx, next) => {
   log4js.info(`get params:${JSON.stringify(ctx.request.query)}`);
   log4js.info(`post params:${JSON.stringify(ctx.request.body)}`);
-  await next();
+  await next().catch((err) => {
+    if (err.status == 401) {
+      ctx.status = 200;
+      ctx.body = utils.fail('Token认证失败', utils.CODE.AUTH_ERROR);
+    } else {
+      throw err;
+    }
+  });
 });
+
+// token 验证，排除登录接口
+app.use(
+  koajwt({ secret: 'qiulengshuo' }).unless({
+    path: [/^\/api\/users\/login/],
+  })
+);
 
 // 一级路由
 router.prefix('/api');
+
 // 二级路由
 router.use(users.routes(), users.allowedMethods());
 // routes
 app.use(router.routes(), router.allowedMethods());
 
 // error-handling
-app.on('error', (err, ctx) => {
-  console.error('server error', err, ctx);
+app.on('error', (err) => {
+  log4js.error(`${err.stack}`)
 });
 
 module.exports = app;

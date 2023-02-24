@@ -13,6 +13,7 @@ const CODE = {
 };
 
 module.exports = {
+  CODE,
   /**
    * 分页结构封装
    * @param {number} pageNum
