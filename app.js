@@ -5,8 +5,11 @@ const json = require('koa-json');
 const onerror = require('koa-onerror');
 const bodyparser = require('koa-bodyparser');
 const logger = require('koa-logger');
-const users = require('./routes/users');
 const router = require('koa-router')();
+const users = require('./routes/users');
+const menus = require('./routes/menus');
+const roles = require('./routes/roles');
+const depts = require('./routes/depts');
 const log4js = require('./utils/log4j');
 const utils = require('./utils/utils');
 const koajwt = require('koa-jwt');
@@ -16,7 +19,7 @@ onerror(app);
 
 require('./config/db');
 
-// middlewares
+
 app.use(
   bodyparser({
     enableTypes: ['json', 'form', 'text'],
@@ -58,6 +61,10 @@ router.prefix('/api');
 
 // 二级路由
 router.use(users.routes(), users.allowedMethods());
+router.use(menus.routes(), menus.allowedMethods());
+router.use(roles.routes(), roles.allowedMethods());
+router.use(depts.routes(), depts.allowedMethods());
+
 // routes
 app.use(router.routes(), router.allowedMethods());
 

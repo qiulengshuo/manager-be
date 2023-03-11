@@ -2,6 +2,8 @@
  *  通用工具函数
  */
 const log4js = require('./log4j');
+const jwt = require('jsonwebtoken');
+
 // 状态码
 const CODE = {
   SUCCESS: 200,
@@ -53,5 +55,32 @@ module.exports = {
       data,
       msg,
     };
+  },
+  // 递归拼接树形菜单
+  getTreeMenu(rootList, id, list) {
+    for (let i = 0; i < rootList.length; i++) {
+      const item = rootList[i];
+      if (String(item.parentId.slice().pop()) === String(id)) {
+        list.push(item._doc);
+      }
+    }
+    list.map((item) => {
+      item.children = [];
+      this.getTreeMenu(rootList, item._id, item.children);
+      if (item.children.length === 0) {
+        delete item.children;
+      } else if (item.children.length > 0 && item.children[0].menuType === 2) {
+        item.action = item.children;
+      }
+    });
+    return list;
+  },
+  // 解密token数据
+  decoded(authorization) {
+    if (authorization) {
+      let token = authorization.split(' ')[1];
+      return jwt.verify(token, 'qiulengshuo');
+    }
+    return '';
   },
 };
