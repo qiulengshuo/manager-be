@@ -10,7 +10,7 @@ router.get('/list', async (ctx) => {
   if (menuName) params.menuName = menuName;
   if (menuState) params.menuState = menuState;
   const rootList = (await Menu.find(params)) || [];
-  const permissionList = utils.getTreeMenu(rootList, null, []);
+  const permissionList = utils.getTreeMenu(rootList, null, [], true);
   ctx.body = utils.success(permissionList);
 });
 

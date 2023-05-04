@@ -71,7 +71,7 @@ router.get('/list', async (ctx) => {
 
 router.get('/all/list', async (ctx) => {
   try {
-    const list = await User.find({}, 'userId userName userEmail');
+    const list = await User.find({ state: 1 }, 'userId userName userEmail');
     ctx.body = util.success(list);
   } catch (error) {
     ctx.body = util.fail(error.stack);
@@ -81,14 +81,18 @@ router.get('/all/list', async (ctx) => {
 router.get('/getPermissionList', async (ctx) => {
   const authorization = ctx.request.headers.authorization;
   const { data } = util.decoded(authorization);
-  const menuList = await getMenuList(data.role, data.roleList);
+  const menuList = await getMenuList(
+    data.role,
+    data.roleList,
+    data.userId === 1000007 ? true : false
+  );
   const actionList = getAction(JSON.parse(JSON.stringify(menuList)));
   ctx.body = util.success({ menuList, actionList });
 });
 
-async function getMenuList(userRole, roleKeys) {
+async function getMenuList(userRole, roleKeys, admin = false) {
   let rootList = [];
-  if (userRole === 0) {
+  if (userRole === 0 && admin) {
     // 管理员，默认拥有所有权限列表(含按钮)
     rootList = (await Menu.find({})) || [];
   } else {

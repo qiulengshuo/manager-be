@@ -57,16 +57,19 @@ module.exports = {
     };
   },
   // 递归拼接树形菜单
-  getTreeMenu(rootList, id, list) {
+  getTreeMenu(rootList, id, list, getAll = false) {
     for (let i = 0; i < rootList.length; i++) {
       const item = rootList[i];
-      if (String(item.parentId.slice().pop()) === String(id)) {
+      if (
+        String(item.parentId.slice().pop()) === String(id) &&
+        (item.menuState !== 2 || getAll)
+      ) {
         list.push(item._doc);
       }
     }
     list.map((item) => {
       item.children = [];
-      this.getTreeMenu(rootList, item._id, item.children);
+      this.getTreeMenu(rootList, item._id, item.children, getAll);
       if (item.children.length === 0) {
         delete item.children;
       } else if (item.children.length > 0 && item.children[0].menuType === 2) {
@@ -82,5 +85,30 @@ module.exports = {
       return jwt.verify(token, 'qiulengshuo');
     }
     return '';
+  },
+  // 格式化时间
+  formateDate(date, rule) {
+    let fmt = rule || 'yyyy-MM-dd hh:mm:ss';
+    if (/(y+)/.test(fmt)) {
+      fmt = fmt.replace(RegExp.$1, date.getFullYear());
+    }
+    const o = {
+      // 'y+': date.getFullYear(),
+      'M+': date.getMonth() + 1,
+      'd+': date.getDate(),
+      'h+': date.getHours(),
+      'm+': date.getMinutes(),
+      's+': date.getSeconds(),
+    };
+    for (let k in o) {
+      if (new RegExp(`(${k})`).test(fmt)) {
+        const val = o[k] + '';
+        fmt = fmt.replace(
+          RegExp.$1,
+          RegExp.$1.length == 1 ? val : ('00' + val).substr(val.length)
+        );
+      }
+    }
+    return fmt;
   },
 };

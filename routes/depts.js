@@ -18,6 +18,15 @@ router.get('/list', async (ctx) => {
   }
 });
 
+router.get('/allList', async (ctx) => {
+  try {
+    const res = await Dept.find();
+    ctx.body = util.success(res);
+  } catch (error) {
+    ctx.body = util.fail(error.stack);
+  }
+});
+
 // 递归生成树形部门列表
 function getTreeDept(rootList, id, list) {
   for (let i = 0; i < rootList.length; i++) {
